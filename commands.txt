@@ -1,0 +1,11 @@
+D:
+chdir /m/work
+
+pwsh/vscode:
+./venv/Scripts/Activate.ps1
+
+cmd: 
+venv\Scripts\activate
+
+Local URL: http://localhost:8501
+  Network URL: http://192.168.0.100:8501
