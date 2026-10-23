@@ -3,29 +3,173 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
+st.set_page_config(
+    page_title="Unramble",
+    page_icon="🌀",
+    layout="centered"
+)
+
+
 load_dotenv()
 
-# Create OpenRouter client
+
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1"
 )
 
-# Streamlit UI
-st.title("Unramble")
 
-st.write("Turn messy thoughts into clear AI-ready prompts.")
+st.markdown("""
+<style>
 
-user_input = st.text_area(
-    "Enter your messy thoughts:",
-    height=200
+.stApp {
+    background: linear-gradient(
+        135deg,
+        #0f0f14 0%,
+        #161621 40%,
+        #1f1f2e 100%
+    );
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
+
+.block-container {
+    padding-top: 3rem;
+    padding-bottom: 2rem;
+    max-width: 850px;
+}
+
+.main-title {
+    font-size: 4rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    letter-spacing: -2px;
+
+    background: linear-gradient(
+        90deg,
+        #ffffff,
+        #b8b8ff,
+        #8be9fd
+    );
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #b0b0c3;
+    margin-bottom: 3rem;
+}
+
+.stTextArea textarea {
+    background-color: rgba(255,255,255,0.05);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px;
+    font-size: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.stTextArea textarea:focus {
+    border: 1px solid #8be9fd;
+    box-shadow: 0 0 15px rgba(139,233,253,0.3);
+}
+
+.stButton button {
+    width: 100%;
+    height: 55px;
+    border: none;
+    border-radius: 18px;
+
+    background: linear-gradient(
+        90deg,
+        #7c5cff,
+        #5ce1e6
+    );
+
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+
+    transition: all 0.3s ease;
+}
+
+.stButton button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(92,225,230,0.25);
+}
+
+.output-box {
+    margin-top: 2rem;
+    padding: 25px;
+
+    background: rgba(255,255,255,0.05);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 22px;
+
+    backdrop-filter: blur(14px);
+
+    line-height: 1.7;
+    font-size: 1rem;
+    color: #f2f2f2;
+}
+
+.output-label {
+    font-size: 0.85rem;
+    color: #8be9fd;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+st.markdown(
+    """
+    <div class="main-title">
+        Unramble
+    </div>
+
+    <div class="subtitle">
+        Turn messy thoughts into clear AI-ready prompts.
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
-if st.button("Unramble"):
+
+user_input = st.text_area(
+    "",
+    placeholder="Dump your chaotic thoughts here...",
+    height=220
+)
+
+
+if st.button("Unramble My Thoughts"):
 
     if user_input.strip() == "":
         st.warning("Please enter something first.")
+
     else:
 
         prompt = f"""
@@ -33,40 +177,22 @@ You are Unramble, a human-to-AI translator.
 
 Your task is to transform messy, vague, or unstructured human thoughts into clear, refined, AI-friendly prompts while preserving the user's original intent, tone, and creative direction.
 
-Your role is NOT to generate new ideas or generate outputs. you are just a translator.
-
-Your role is to help users express their existing ideas more clearly using better wording, clearer structure, and more precise terminology.
-
-The user may struggle to:
-- find the right words
-- describe aesthetics clearly
-- explain technical ideas
-- communicate creative direction effectively
-
-Your job is to intelligently bridge that communication gap.
+Your role is NOT to generate new ideas or outputs.
+You are only a translator.
 
 IMPORTANT:
-- Preserve the user's original meaning and intention.
-- Preserve emotional tone and personality.
-- Improve clarity, structure, and wording.
-- Add useful technical, artistic, cinematic, or descriptive terminology ONLY when it supports the user's existing idea.
-- Slightly refine vague descriptions into clearer language without changing the concept.
-- Remove filler words and repetition.
-- Keep the output natural and human.
+- Preserve the user's original meaning and tone.
+- Improve wording, structure, and clarity.
+- Add better terminology when useful.
+- Remove repetition and filler.
+- Keep it natural and human.
 
 DO NOT:
-- Invent completely new concepts.
-- Add unrelated creative ideas.
-- Turn the prompt into a final generated answer.
-- Overwrite the user's voice or style.
-- Sound robotic or overly corporate.
+- Invent new concepts.
+- Overwrite the user's style.
+- Sound robotic.
 
-STRICT RULES:
-- Return ONLY the refined prompt.
-- No introductions.
-- No explanations.
-- No markdown.
-- No quotation marks.
+Return ONLY the refined prompt.
 
 USER INPUT:
 {user_input}
@@ -74,20 +200,48 @@ USER INPUT:
 
         try:
 
-            response = client.chat.completions.create(
-                model="arcee-ai/trinity-large-thinking:free",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            )
+            with st.spinner("Unrambling your thoughts..."):
 
-            refined_prompt = response.choices[0].message.content
+                response = client.chat.completions.create(
+                    model="arcee-ai/trinity-large-thinking:free",
 
-            st.subheader("Refined Prompt:")
-            st.write(refined_prompt)
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": """
+You are Unramble, a human-to-AI translator.
+Transform messy thoughts into refined AI-ready prompts.
+Never generate final outputs.
+Only refine the user's existing idea.
+"""
+                        },
+
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+
+                    temperature=0.6,
+                    max_tokens=500
+                )
+
+                refined_prompt = response.choices[0].message.content
+
+                st.markdown(
+                    f"""
+                    <div class="output-box">
+
+                        <div class="output-label">
+                            Refined Prompt
+                        </div>
+
+                        {refined_prompt}
+
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
         except Exception as e:
             st.error(f"Error: {e}")
